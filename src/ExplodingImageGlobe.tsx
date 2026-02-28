@@ -40,71 +40,22 @@ const ParticleBackground = () => {
     );
 };
 
-// --- CSS UI Cards ---
-const generateCardStyles = (index: number) => {
-    const type = index % 4;
-
-    // Card base styles
-    const base = "w-28 h-18 sm:w-32 sm:h-20 bg-white rounded-lg shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-zinc-200 p-2 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2 overflow-hidden box-border";
-
-    switch (type) {
-        case 0:
-            return (
-                <div className={base}>
-                    <div className="w-full h-3 sm:h-4 bg-zinc-200 rounded-sm"></div>
-                    <div className="w-3/4 h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
-                    <div className="w-1/2 h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
-                    <div className="mt-auto flex gap-1.5">
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-100"></div>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-rose-100"></div>
-                    </div>
-                </div>
-            );
-        case 1:
-            return (
-                <div className={base}>
-                    <div className="flex gap-2 items-center mb-1">
-                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 shrink-0"></div>
-                        <div className="w-10 sm:w-14 h-2 sm:h-2.5 bg-zinc-200 rounded-sm"></div>
-                    </div>
-                    <div className="w-full h-full bg-zinc-50 rounded-md flex gap-1.5 p-1.5">
-                        <div className="w-1/3 h-full bg-zinc-200 rounded-sm"></div>
-                        <div className="w-2/3 h-full flex flex-col gap-1">
-                            <div className="w-full h-2 bg-zinc-100 rounded-sm"></div>
-                            <div className="w-4/5 h-2 bg-zinc-100 rounded-sm"></div>
-                        </div>
-                    </div>
-                </div>
-            );
-        case 2:
-            return (
-                <div className={base}>
-                    <div className="w-full flex justify-between items-center mb-0.5">
-                        <div className="w-8 sm:w-10 h-2 sm:h-2.5 bg-zinc-200 rounded-sm"></div>
-                        <div className="w-3 h-3 sm:w-4 sm:h-4 bg-zinc-200 rounded-sm"></div>
-                    </div>
-                    <div className="flex-1 w-full bg-indigo-50/50 rounded-md border border-indigo-100/50 p-1.5 flex flex-col justify-center">
-                        <div className="w-full h-2 sm:h-2.5 bg-indigo-100 rounded-sm mb-1 sm:mb-1.5"></div>
-                        <div className="w-2/3 h-2 sm:h-2.5 bg-indigo-100 rounded-sm"></div>
-                    </div>
-                </div>
-            );
-        case 3:
-        default:
-            return (
-                <div className={base}>
-                    <div className="flex gap-1 mb-0.5">
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-zinc-200 rounded-sm"></div>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-zinc-200 rounded-sm"></div>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-zinc-200 rounded-sm"></div>
-                    </div>
-                    <div className="w-full h-2 sm:h-2.5 bg-zinc-100 rounded-sm mt-1"></div>
-                    <div className="w-full h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
-                    <div className="w-4/5 h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
-                </div>
-            );
-    }
-}
+// --- Unsplash Images ---
+const unsplashIds = [
+    "1522202176988-66273c2fd55f", // code
+    "1498050108023-c5249f4df085", // monitor code
+    "1504384308090-c894fdcc538d", // desk view
+    "1505909182942-e2f09aee3e89", // abstract tech
+    "1517694712202-14dd9538aa97", // code screen focus
+    "1461749280684-dccba630e2f6", // laptop plant
+    "1550745165-9bc0b252726f", // retro vibes
+    "1454165804606-c3d57bc86b40", // desk flatlay
+    "1480694313141-fce5e697ee25", // mobile app
+    "1499951360447-b19be8fe80f5", // web design layout
+    "1555421689-d68471e189f2", // laptop home
+    "1522542550221-31fd19575a2d", // colorful iMac
+    "1516321497487-e288fb19713f", // hands typing
+];
 
 // --- Math Helper for Sphere ---
 const getSphericalPositions = (samples: number) => {
@@ -184,7 +135,14 @@ export default function ExplodingImageGlobe() {
                                     transformStyle: 'preserve-3d'
                                 }}
                             >
-                                <motion.div
+                                <motion.img
+                                    src={`https://images.unsplash.com/photo-${unsplashIds[i % unsplashIds.length]}?auto=format&fit=crop&q=80&w=200&h=140`}
+                                    alt={`Globe image ${i}`}
+                                    className="w-20 h-14 sm:w-28 sm:h-20 object-cover bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-zinc-200"
+                                    referrerPolicy="no-referrer"
+                                    style={{
+                                        transformStyle: 'preserve-3d'
+                                    }}
                                     initial={{
                                         z: 0,
                                         opacity: 0,
@@ -213,12 +171,7 @@ export default function ExplodingImageGlobe() {
                                             ease: "easeOut"
                                         }
                                     }}
-                                    style={{
-                                        transformStyle: 'preserve-3d'
-                                    }}
-                                >
-                                    {generateCardStyles(i)}
-                                </motion.div>
+                                />
                             </div>
                         ))}
                     </motion.div>
