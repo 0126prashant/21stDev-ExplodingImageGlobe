@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 // --- Particle Background Component ---
@@ -126,29 +126,22 @@ const getSphericalPositions = (samples: number) => {
 
 // --- Main Component ---
 export default function ExplodingImageGlobe() {
-    const [isExploded, setIsExploded] = useState(false);
     const NUM_CARDS = 80;
     const RADIUS = 360; // radius adapted for card bounds
 
-    useEffect(() => {
-        // Trigger explosion after 3 seconds
-        const timer = setTimeout(() => {
-            setIsExploded(true);
-        }, 3000);
-        return () => clearTimeout(timer);
-    }, []);
-
     const positions = useMemo(() => getSphericalPositions(NUM_CARDS), []);
 
-    const scaleVariants = {
-        hidden: { scale: 0 },
-        visible: {
-            scale: 1,
-            transition: { type: "spring", bounce: 0.4, duration: 1.5 }
+    const globeVariants = {
+        hidden: {
+            y: 150,
+            scale: 0.5,
+            opacity: 0
         },
-        explode: {
+        visible: {
+            y: 0,
             scale: 1,
-            transition: { duration: 1.5 }
+            opacity: 1,
+            transition: { type: "spring" as const, bounce: 0.3, duration: 2 }
         }
     };
 
@@ -163,8 +156,8 @@ export default function ExplodingImageGlobe() {
             >
                 <motion.div
                     initial="hidden"
-                    animate={isExploded ? "explode" : "visible"}
-                    variants={scaleVariants}
+                    animate="visible"
+                    variants={globeVariants}
                     style={{ transformStyle: 'preserve-3d' }}
                     className="relative flex items-center justify-center"
                 >
@@ -193,29 +186,30 @@ export default function ExplodingImageGlobe() {
                             >
                                 <motion.div
                                     initial={{
-                                        z: RADIUS,
+                                        z: 0,
                                         opacity: 0,
-                                        scale: 0
+                                        scale: 0.5
                                     }}
                                     animate={{
-                                        z: isExploded ? RADIUS * 4 : RADIUS,
-                                        opacity: isExploded ? 0 : 1,
-                                        scale: isExploded ? 1.5 : 1
+                                        z: RADIUS,
+                                        opacity: 1,
+                                        scale: 1
                                     }}
                                     transition={{
                                         opacity: {
-                                            duration: isExploded ? 0.8 : 0.4,
-                                            delay: isExploded ? Math.random() * 0.2 : i * 0.01 + 0.5,
+                                            duration: 1,
+                                            delay: i * 0.02,
                                             ease: "easeOut"
                                         },
                                         z: {
-                                            duration: isExploded ? 1.2 : 0.8,
-                                            delay: isExploded ? Math.random() * 0.1 : i * 0.01 + 0.5,
-                                            ease: [0.19, 1, 0.22, 1] // smooth expo out
+                                            type: "spring",
+                                            stiffness: 70,
+                                            damping: 12,
+                                            delay: i * 0.02
                                         },
                                         scale: {
-                                            duration: isExploded ? 1.2 : 0.8,
-                                            delay: isExploded ? Math.random() * 0.1 : i * 0.01 + 0.5,
+                                            duration: 1,
+                                            delay: i * 0.02,
                                             ease: "easeOut"
                                         }
                                     }}
