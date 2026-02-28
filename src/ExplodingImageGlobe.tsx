@@ -8,7 +8,7 @@ const ParticleBackground = () => {
             x: Math.random() * 100,
             y: Math.random() * 100,
             size: Math.random() * 2 + 0.5,
-            opacity: Math.random() * 0.4 + 0.1,
+            opacity: Math.random() * 0.3 + 0.1,
             duration: Math.random() * 20 + 10,
         }));
     }, []);
@@ -40,46 +40,71 @@ const ParticleBackground = () => {
     );
 };
 
-// --- Hero Section Component ---
-const HeroSection = ({ isExploded }: { isExploded: boolean }) => (
-    <motion.div
-        className="absolute z-0 flex flex-col items-center justify-center text-center px-4 max-w-4xl"
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{
-            opacity: isExploded ? 1 : 0,
-            scale: isExploded ? 1 : 0.9,
-            y: isExploded ? 0 : 20
-        }}
-        transition={{ duration: 1.2, delay: 0.1, ease: "easeOut" }}
-    >
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isExploded ? 1 : 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm font-medium backdrop-blur-sm"
-        >
-            <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            Awwwards-winning sequence
-        </motion.div>
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
-            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400">SavvyHub</span>
-        </h1>
-        <p className="text-lg md:text-xl text-zinc-400 mb-8 max-w-2xl mx-auto">
-            Experience the next generation of web interfaces. The most beautiful, perfectly crafted, and seamlessly animated UI components designed to convert.
-        </p>
-        <div className="flex gap-4 justify-center">
-            <button className="px-6 py-3 rounded-lg bg-white text-black font-semibold hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                Get Started Free
-            </button>
-            <button className="px-6 py-3 rounded-lg border border-zinc-700 text-white font-semibold hover:bg-zinc-800 transition-colors backdrop-blur-sm">
-                View Gallery
-            </button>
-        </div>
-    </motion.div>
-);
+// --- CSS UI Cards ---
+const generateCardStyles = (index: number) => {
+    const type = index % 4;
+
+    // Card base styles
+    const base = "w-28 h-18 sm:w-32 sm:h-20 bg-white rounded-lg shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-zinc-200 p-2 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2 overflow-hidden box-border";
+
+    switch (type) {
+        case 0:
+            return (
+                <div className={base}>
+                    <div className="w-full h-3 sm:h-4 bg-zinc-200 rounded-sm"></div>
+                    <div className="w-3/4 h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
+                    <div className="w-1/2 h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
+                    <div className="mt-auto flex gap-1.5">
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-100"></div>
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-rose-100"></div>
+                    </div>
+                </div>
+            );
+        case 1:
+            return (
+                <div className={base}>
+                    <div className="flex gap-2 items-center mb-1">
+                        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-100 shrink-0"></div>
+                        <div className="w-10 sm:w-14 h-2 sm:h-2.5 bg-zinc-200 rounded-sm"></div>
+                    </div>
+                    <div className="w-full h-full bg-zinc-50 rounded-md flex gap-1.5 p-1.5">
+                        <div className="w-1/3 h-full bg-zinc-200 rounded-sm"></div>
+                        <div className="w-2/3 h-full flex flex-col gap-1">
+                            <div className="w-full h-2 bg-zinc-100 rounded-sm"></div>
+                            <div className="w-4/5 h-2 bg-zinc-100 rounded-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        case 2:
+            return (
+                <div className={base}>
+                    <div className="w-full flex justify-between items-center mb-0.5">
+                        <div className="w-8 sm:w-10 h-2 sm:h-2.5 bg-zinc-200 rounded-sm"></div>
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 bg-zinc-200 rounded-sm"></div>
+                    </div>
+                    <div className="flex-1 w-full bg-indigo-50/50 rounded-md border border-indigo-100/50 p-1.5 flex flex-col justify-center">
+                        <div className="w-full h-2 sm:h-2.5 bg-indigo-100 rounded-sm mb-1 sm:mb-1.5"></div>
+                        <div className="w-2/3 h-2 sm:h-2.5 bg-indigo-100 rounded-sm"></div>
+                    </div>
+                </div>
+            );
+        case 3:
+        default:
+            return (
+                <div className={base}>
+                    <div className="flex gap-1 mb-0.5">
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-zinc-200 rounded-sm"></div>
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-zinc-200 rounded-sm"></div>
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-zinc-200 rounded-sm"></div>
+                    </div>
+                    <div className="w-full h-2 sm:h-2.5 bg-zinc-100 rounded-sm mt-1"></div>
+                    <div className="w-full h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
+                    <div className="w-4/5 h-2 sm:h-2.5 bg-zinc-100 rounded-sm"></div>
+                </div>
+            );
+    }
+}
 
 // --- Math Helper for Sphere ---
 const getSphericalPositions = (samples: number) => {
@@ -102,8 +127,8 @@ const getSphericalPositions = (samples: number) => {
 // --- Main Component ---
 export default function ExplodingImageGlobe() {
     const [isExploded, setIsExploded] = useState(false);
-    const NUM_IMAGES = 80;
-    const RADIUS = 280;
+    const NUM_CARDS = 80;
+    const RADIUS = 360; // radius adapted for card bounds
 
     useEffect(() => {
         // Trigger explosion after 3 seconds
@@ -113,12 +138,7 @@ export default function ExplodingImageGlobe() {
         return () => clearTimeout(timer);
     }, []);
 
-    const positions = useMemo(() => getSphericalPositions(NUM_IMAGES), []);
-
-    // Using picsum photos for reliable random images
-    const images = useMemo(() => {
-        return Array.from({ length: NUM_IMAGES }).map((_, i) => `https://picsum.photos/seed/${i + 150}/200/200`);
-    }, []);
+    const positions = useMemo(() => getSphericalPositions(NUM_CARDS), []);
 
     const scaleVariants = {
         hidden: { scale: 0 },
@@ -127,16 +147,14 @@ export default function ExplodingImageGlobe() {
             transition: { type: "spring", bounce: 0.4, duration: 1.5 }
         },
         explode: {
-            scale: 1.1,
-            transition: { duration: 1.5, ease: [0.19, 1, 0.22, 1] } // custom cubic-bezier for smooth out
+            scale: 1,
+            transition: { duration: 1.5 }
         }
     };
 
     return (
-        <div className="relative w-full h-full min-h-screen flex items-center justify-center overflow-hidden bg-zinc-950 font-sans selection:bg-blue-500/30">
+        <div className="relative w-full h-full min-h-screen flex items-center justify-center overflow-hidden bg-[#f5f5f5] font-sans">
             <ParticleBackground />
-
-            <HeroSection isExploded={isExploded} />
 
             {/* Globe Container with perspective */}
             <div
@@ -173,14 +191,7 @@ export default function ExplodingImageGlobe() {
                                     transformStyle: 'preserve-3d'
                                 }}
                             >
-                                <motion.img
-                                    src={images[i]}
-                                    alt={`Globe image ${i}`}
-                                    className="w-14 h-14 md:w-16 md:h-16 object-cover rounded shadow-2xl"
-                                    style={{
-                                        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)',
-                                        border: '1px solid rgba(255,255,255,0.1)'
-                                    }}
+                                <motion.div
                                     initial={{
                                         z: RADIUS,
                                         opacity: 0,
@@ -208,7 +219,12 @@ export default function ExplodingImageGlobe() {
                                             ease: "easeOut"
                                         }
                                     }}
-                                />
+                                    style={{
+                                        transformStyle: 'preserve-3d'
+                                    }}
+                                >
+                                    {generateCardStyles(i)}
+                                </motion.div>
                             </div>
                         ))}
                     </motion.div>
