@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, AnimatePresence, type PanInfo } from 'framer-motion';
 
 // --- Particle Background Component ---
@@ -96,7 +96,7 @@ export default function ExplodingImageGlobe() {
     };
 
     // --- State & Timeline ---
-    const [phase, setPhase] = useState<'idle' | 'forming'>('idle');
+    const [phase, setPhase] = useState<'idle' | 'forming' | 'exploding'>('idle');
     const [focusedImage, setFocusedImage] = useState<string | null>(null);
 
     // 3D Rotation State
@@ -115,6 +115,15 @@ export default function ExplodingImageGlobe() {
         const formTimeout = setTimeout(() => setPhase('forming'), 1000);
         return () => clearTimeout(formTimeout);
     }, []);
+
+    const handleImageClick = (hiResUrl: string) => {
+        if (phase !== 'forming') return;
+        setPhase('exploding');
+        // Wait for the cards to fly past the camera before showing the image
+        setTimeout(() => {
+            setFocusedImage(hiResUrl);
+        }, 1200);
+    };
 
     return (
         <div className="relative w-full h-full min-h-screen flex items-center justify-center overflow-hidden bg-[#f5f5f5] font-sans">
@@ -135,11 +144,11 @@ export default function ExplodingImageGlobe() {
             )}
 
             {/* Globe Container with perspective */}
-            {phase === 'forming' && (
+            {(phase === 'forming' || phase === 'exploding') && (
                 <motion.div
-                    className="absolute inset-0 flex items-center justify-center z-10 cursor-grab active:cursor-grabbing"
+                    className={`absolute inset-0 flex items-center justify-center z-10 ${phase === 'forming' ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
                     style={{ perspective: '1200px' }}
-                    onPan={handlePan}
+                    onPan={phase === 'forming' ? handlePan : undefined}
                 >
                     <motion.div
                         initial="hidden"
@@ -178,23 +187,35 @@ export default function ExplodingImageGlobe() {
                                             style={{
                                                 transformStyle: 'preserve-3d'
                                             }}
-                                            onClick={() => setFocusedImage(hiResUrl)}
+                                            onClick={() => handleImageClick(hiResUrl)}
                                             initial={{
                                                 z: 0,
                                                 opacity: 0,
                                                 scale: 0.5
                                             }}
-                                            animate={{
-                                                z: RADIUS,
-                                                opacity: 1,
-                                                scale: 1,
-                                                transition: {
-                                                    opacity: { duration: 1, delay: i * 0.02, ease: "easeOut" },
-                                                    z: { type: "spring", stiffness: 70, damping: 12, delay: i * 0.02 },
-                                                    scale: { duration: 1, delay: i * 0.02, ease: "easeOut" }
-                                                }
-                                            }}
-                                            whileHover={{ scale: 1.1, z: RADIUS + 20 }}
+                                            animate={
+                                                phase === 'exploding'
+                                                    ? {
+                                                        z: 2000,
+                                                        opacity: 0,
+                                                        scale: 3,
+                                                        transition: {
+                                                            duration: 1.5,
+                                                            ease: "easeIn",
+                                                        }
+                                                    }
+                                                    : {
+                                                        z: RADIUS,
+                                                        opacity: 1,
+                                                        scale: 1,
+                                                        transition: {
+                                                            opacity: { duration: 1, delay: i * 0.02, ease: "easeOut" },
+                                                            z: { type: "spring", stiffness: 70, damping: 12, delay: i * 0.02 },
+                                                            scale: { duration: 1, delay: i * 0.02, ease: "easeOut" }
+                                                        }
+                                                    }
+                                            }
+                                            whileHover={phase === 'forming' ? { scale: 1.1, z: RADIUS + 20 } : {}}
                                         >
                                             {/* Header area */}
                                             <div className="h-1.5 sm:h-2 bg-zinc-800/50 w-full flex items-center px-1 gap-0.5 border-b border-zinc-800 shrink-0">
@@ -240,7 +261,10 @@ export default function ExplodingImageGlobe() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-12 cursor-pointer"
-                        onClick={() => setFocusedImage(null)}
+                        onClick={() => {
+                            setFocusedImage(null);
+                            setPhase('forming');
+                        }}
                     >
                         <motion.img
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -255,7 +279,10 @@ export default function ExplodingImageGlobe() {
                         />
                         <button
                             className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm transition-colors"
-                            onClick={() => setFocusedImage(null)}
+                            onClick={() => {
+                                setFocusedImage(null);
+                                setPhase('forming');
+                            }}
                         >
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
