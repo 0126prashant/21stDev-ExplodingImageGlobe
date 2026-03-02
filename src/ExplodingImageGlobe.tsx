@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useState, useEffect } from 'react';
+import { motion, useMotionValue, useSpring, AnimatePresence, type PanInfo } from 'framer-motion';
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -40,21 +40,20 @@ const ParticleBackground = () => {
     );
 };
 
-// --- Unsplash Images ---
+// --- Unsplash Diverse Images ---
 const unsplashIds = [
+    "1501854140801-50d01698940b", // nature
+    "1447069387593-a5de0862481e", // architecture
+    "1469474968028-56623f02e42e", // city
+    "1441974231531-c6227dbb6b9e", // forest
+    "1506744626772-2771335a92a4", // ocean
+    "1475924156734-497878411200", // space
+    "1518837695005-2083093ee35b", // abstract
+    "1493246507139-91e8fad9978e", // mountain
+    "1519681395980-4bd0de423c94", // colorful
+    "1531297172-8700d5a3ece1", // minimal
+    "1507238691740-14c0122462e1", // dual screens
     "1522202176988-66273c2fd55f", // code
-    "1498050108023-c5249f4df085", // monitor code
-    "1504384308090-c894fdcc538d", // desk view
-    "1505909182942-e2f09aee3e89", // abstract tech
-    "1517694712202-14dd9538aa97", // code screen focus
-    "1461749280684-dccba630e2f6", // laptop plant
-    "1550745165-9bc0b252726f", // retro vibes
-    "1454165804606-c3d57bc86b40", // desk flatlay
-    "1480694313141-fce5e697ee25", // mobile app
-    "1499951360447-b19be8fe80f5", // web design layout
-    "1555421689-d68471e189f2", // laptop home
-    "1522542550221-31fd19575a2d", // colorful iMac
-    "1516321497487-e288fb19713f", // hands typing
 ];
 
 // --- Math Helper for Sphere ---
@@ -78,14 +77,14 @@ const getSphericalPositions = (samples: number) => {
 // --- Main Component ---
 export default function ExplodingImageGlobe() {
     const NUM_CARDS = 80;
-    const RADIUS = 360; // radius adapted for card bounds
+    const RADIUS = 450; // Increased radius to spread cards out
 
     const positions = useMemo(() => getSphericalPositions(NUM_CARDS), []);
 
     const globeVariants = {
         hidden: {
-            y: 150,
-            scale: 0.5,
+            y: 0,
+            scale: 0,
             opacity: 0
         },
         visible: {
@@ -96,87 +95,175 @@ export default function ExplodingImageGlobe() {
         }
     };
 
+    // --- State & Timeline ---
+    const [phase, setPhase] = useState<'idle' | 'forming'>('idle');
+    const [focusedImage, setFocusedImage] = useState<string | null>(null);
+
+    // 3D Rotation State
+    const rotationX = useMotionValue(0);
+    const rotationY = useMotionValue(0);
+    const springX = useSpring(rotationX, { stiffness: 100, damping: 20 });
+    const springY = useSpring(rotationY, { stiffness: 100, damping: 20 });
+
+    const handlePan = (_e: any, info: PanInfo) => {
+        rotationY.set(rotationY.get() + info.delta.x * 0.5);
+        rotationX.set(rotationX.get() - info.delta.y * 0.5);
+    };
+
+    useEffect(() => {
+        // Just form the globe, no explosion or hero cut
+        const formTimeout = setTimeout(() => setPhase('forming'), 1000);
+        return () => clearTimeout(formTimeout);
+    }, []);
+
     return (
         <div className="relative w-full h-full min-h-screen flex items-center justify-center overflow-hidden bg-[#f5f5f5] font-sans">
             <ParticleBackground />
 
-            {/* Globe Container with perspective */}
-            <div
-                className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
-                style={{ perspective: '1200px' }}
-            >
+            {/* Initial Center Marker (□ ○ +) */}
+            {phase === 'idle' && (
                 <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={globeVariants}
-                    style={{ transformStyle: 'preserve-3d' }}
-                    className="relative flex items-center justify-center"
+                    className="absolute z-0 flex items-center justify-center gap-1.5 text-zinc-400 text-[10px]"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
                 >
-                    {/* Continuous rotation layer */}
+                    <div className="w-1.5 h-1.5 border border-zinc-400"></div>
+                    <div className="w-1.5 h-1.5 border border-zinc-400 rounded-full"></div>
+                    <div>+</div>
+                </motion.div>
+            )}
+
+            {/* Globe Container with perspective */}
+            {phase === 'forming' && (
+                <motion.div
+                    className="absolute inset-0 flex items-center justify-center z-10 cursor-grab active:cursor-grabbing"
+                    style={{ perspective: '1200px' }}
+                    onPan={handlePan}
+                >
                     <motion.div
-                        animate={{ rotateY: 360, rotateX: 360 }}
-                        transition={{
-                            rotateY: { repeat: Infinity, duration: 40, ease: "linear" },
-                            rotateX: { repeat: Infinity, duration: 45, ease: "linear" }
-                        }}
-                        style={{
-                            transformStyle: 'preserve-3d',
-                            width: 0,
-                            height: 0
-                        }}
-                        className="flex items-center justify-center"
+                        initial="hidden"
+                        animate="visible"
+                        variants={globeVariants}
+                        style={{ transformStyle: 'preserve-3d' }}
+                        className="relative flex items-center justify-center w-full h-full"
                     >
-                        {positions.map((pos, i) => (
-                            <div
-                                key={i}
-                                className="absolute flex items-center justify-center"
-                                style={{
-                                    transform: `rotateY(${pos.rotateY}rad) rotateX(${pos.rotateX}rad)`,
-                                    transformStyle: 'preserve-3d'
-                                }}
-                            >
-                                <motion.img
-                                    src={`https://images.unsplash.com/photo-${unsplashIds[i % unsplashIds.length]}?auto=format&fit=crop&q=80&w=200&h=140`}
-                                    alt={`Globe image ${i}`}
-                                    className="w-20 h-14 sm:w-28 sm:h-20 object-cover bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] border border-zinc-200"
-                                    referrerPolicy="no-referrer"
-                                    style={{
-                                        transformStyle: 'preserve-3d'
-                                    }}
-                                    initial={{
-                                        z: 0,
-                                        opacity: 0,
-                                        scale: 0.5
-                                    }}
-                                    animate={{
-                                        z: RADIUS,
-                                        opacity: 1,
-                                        scale: 1
-                                    }}
-                                    transition={{
-                                        opacity: {
-                                            duration: 1,
-                                            delay: i * 0.02,
-                                            ease: "easeOut"
-                                        },
-                                        z: {
-                                            type: "spring",
-                                            stiffness: 70,
-                                            damping: 12,
-                                            delay: i * 0.02
-                                        },
-                                        scale: {
-                                            duration: 1,
-                                            delay: i * 0.02,
-                                            ease: "easeOut"
-                                        }
-                                    }}
-                                />
-                            </div>
-                        ))}
+                        {/* Manual rotation layer */}
+                        <motion.div
+                            style={{
+                                transformStyle: 'preserve-3d',
+                                rotateX: springX,
+                                rotateY: springY,
+                                width: 0,
+                                height: 0
+                            }}
+                            className="flex items-center justify-center"
+                        >
+                            {positions.map((pos, i) => {
+                                const photoId = unsplashIds[i % unsplashIds.length];
+                                const imgUrl = `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&q=80&w=200&h=140`;
+                                const hiResUrl = `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&q=80&w=1200&h=800`;
+
+                                return (
+                                    <div
+                                        key={i}
+                                        className="absolute flex items-center justify-center pointer-events-none"
+                                        style={{
+                                            transform: `rotateY(${pos.rotateY}rad) rotateX(${pos.rotateX}rad)`,
+                                            transformStyle: 'preserve-3d'
+                                        }}
+                                    >
+                                        <motion.div
+                                            className="w-16 h-12 sm:w-20 sm:h-14 bg-zinc-900 rounded shadow-[0_4px_20px_-4px_rgba(0,0,0,0.3)] border border-zinc-800 overflow-hidden flex flex-col relative cursor-pointer pointer-events-auto"
+                                            style={{
+                                                transformStyle: 'preserve-3d'
+                                            }}
+                                            onClick={() => setFocusedImage(hiResUrl)}
+                                            initial={{
+                                                z: 0,
+                                                opacity: 0,
+                                                scale: 0.5
+                                            }}
+                                            animate={{
+                                                z: RADIUS,
+                                                opacity: 1,
+                                                scale: 1,
+                                                transition: {
+                                                    opacity: { duration: 1, delay: i * 0.02, ease: "easeOut" },
+                                                    z: { type: "spring", stiffness: 70, damping: 12, delay: i * 0.02 },
+                                                    scale: { duration: 1, delay: i * 0.02, ease: "easeOut" }
+                                                }
+                                            }}
+                                            whileHover={{ scale: 1.1, z: RADIUS + 20 }}
+                                        >
+                                            {/* Header area */}
+                                            <div className="h-1.5 sm:h-2 bg-zinc-800/50 w-full flex items-center px-1 gap-0.5 border-b border-zinc-800 shrink-0">
+                                                <div className="w-1 h-1 rounded-full bg-red-500/80"></div>
+                                                <div className="w-1 h-1 rounded-full bg-yellow-500/80"></div>
+                                                <div className="w-1 h-1 rounded-full bg-green-500/80"></div>
+                                            </div>
+                                            {/* Content area: image + mock UI elements */}
+                                            <div className="flex-1 flex flex-col p-1 sm:p-1.5 gap-1 bg-zinc-900 pointer-events-none">
+                                                {/* Top bar skeleton */}
+                                                <div className="flex gap-1 items-center">
+                                                    <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-sm bg-zinc-800 shrink-0"></div>
+                                                    <div className="flex-1 space-y-0.5">
+                                                        <div className="h-[2px] sm:h-1 bg-zinc-700/50 rounded w-full"></div>
+                                                        <div className="h-[2px] sm:h-1 bg-zinc-800/50 rounded w-2/3"></div>
+                                                    </div>
+                                                </div>
+                                                {/* Unsplash Image Area */}
+                                                <div className="flex-1 bg-zinc-800 rounded-sm overflow-hidden relative group">
+                                                    <img
+                                                        src={imgUrl}
+                                                        alt={`Globe image ${i}`}
+                                                        className="absolute inset-0 w-full h-full object-cover transition-all duration-300"
+                                                        referrerPolicy="no-referrer"
+                                                        draggable={false}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    </div>
+                                )
+                            })}
+                        </motion.div>
                     </motion.div>
                 </motion.div>
-            </div>
+            )}
+
+            {/* Focused Image View */}
+            <AnimatePresence>
+                {focusedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-12 cursor-pointer"
+                        onClick={() => setFocusedImage(null)}
+                    >
+                        <motion.img
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            transition={{ type: "spring", damping: 20, stiffness: 100 }}
+                            src={focusedImage}
+                            alt="Focused view"
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                            referrerPolicy="no-referrer"
+                        />
+                        <button
+                            className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 p-2 rounded-full backdrop-blur-sm transition-colors"
+                            onClick={() => setFocusedImage(null)}
+                        >
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
